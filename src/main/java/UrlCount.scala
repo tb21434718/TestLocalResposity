@@ -1,25 +1,30 @@
 
-import org.apache.spark.{HashPartitioner, SparkConf}
+import java.util.HashMap
+
+import org.apache.log4j.{Level, Logger}
+import org.apache.spark.SparkConf
 import org.apache.spark.storage.StorageLevel
 import org.apache.spark.streaming.kafka.KafkaUtils
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 
-object UrlCount {
 
-  val updateFunc = (iterator: Iterator[(String, Seq[Int], Option[Int])]) => {
-    iterator.flatMap{case(x,y,z)=> Some(y.sum + z.getOrElse(0)).map(n=>(x, n))}
+
+object UrlCount{
+  def updateFunction(newValues: Seq[Int], runningCount: Option[Int]): Option[Int] = {
+    return Some(newValues.sum+runningCount.getOrElse(0))
   }
 
-  def main(args: Array[String]): Unit = {
-
-    //接收命令行中的参数
+  def main(args: Array[String]) {
+    Logger.getLogger("org.apache.spark").setLevel(Level.WARN)
+    Logger.getLogger("org.eclipse.jetty.server").setLevel(Level.OFF)
     val Array(zkQuorum, group, topics, numThreads) = args
     val sparkConf = new SparkConf().setAppName("KafkaWordCount").setMaster("local[2]")
-    val ssc = new StreamingContext(sparkConf, Seconds(2))
+
+    val ssc = new StreamingContext(sparkConf, Seconds(10))
     ssc.checkpoint("d://ck2")
     //"alog-2016-04-16,alog-2016-04-17,alog-2016-04-18"
     //"Array((alog-2016-04-16, 2), (alog-2016-04-17, 2), (alog-2016-04-18, 2))"
-    val topicMap = topics.split(",").map((_, 2)).toMap
+    val topicMap = "test".split(",").map((_, 2)).toMap
     val data = KafkaUtils.createStream(ssc, zkQuorum, group, topicMap, StorageLevel.MEMORY_AND_DISK_SER)
     data.count().print()
     println(1)
@@ -29,24 +34,16 @@ object UrlCount {
     val lines = data.map(_._2).flatMap(_.split(" "))
     val word = lines.map(x=>(x,1))
     word.count().print()
-
     word.print()
     //wordCounts.print()
 
     ssc.start()
     println(2)
-   // word.print()
+    // word.print()
 
 
     //wordCounts.print()
     ssc.awaitTermination()
     println(3)
-
-
-
-
   }
-
-
-  }
-
+}

@@ -92,7 +92,7 @@ object Mytest {
     //推荐前十部最感兴趣的电影，注意要剔除用户已经评分的电影
     val myRateMoviesIds=myRatings.map(_.product).toSet   //得到自己的53部电影id
     myRateMoviesIds.foreach(println)
-    val candidates=sc.parallelize(movies.keys.filter(!myRatings.contains(_)).toSeq)
+    val candidates=sc.parallelize(movies.keys.filter(myRatings.contains(_)).toSeq)
     println("长度："+candidates.count())
    // println(bestModel.head)
     val recommendations =bestModel.get.predict(candidates.map((0,_))).collect.sortBy(-_.rating).take(10)

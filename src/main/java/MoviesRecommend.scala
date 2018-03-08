@@ -10,7 +10,7 @@ object MoviesRecommend{
       System.err.println("Usage : <master> <hdfs dir path>")
       System.exit(1)
     }*/
-
+    
     //屏蔽日志，由于结果是打印在控制台上的，为了方便查看结果，将spark日志输出关掉
     Logger.getLogger("org.apache.spark").setLevel(Level.WARN)
     Logger.getLogger("org.eclipse.jetty.server").setLevel(Level.OFF)
@@ -38,7 +38,7 @@ object MoviesRecommend{
       val fields = lines.split("::")
       Rating(fields(0).toInt, fields(1).toInt, fields(2).toDouble)
     }
-println("myRatedData_Rating"+myRatedData_Rating.red)
+println("myRatedData_Rating"+myRatedData_Rating)
     //从训练总数据总分出80%作为训练集，20%作为验证数据集，20%作为测试数据集，前面的将timespan对10做取余操作的作用就是为了从总数据集中分出三部分
     //设置分区数
     val numPartitions = 3
@@ -142,7 +142,7 @@ println("myRatedData_Rating"+myRatedData_Rating.red)
         + moviesType_Map(r.product))
       i += 1
     }
-    //为指定用户推荐的前N商品
+    println("为指定用户推荐的前N商品")
     bestModel.recommendProducts(1,10).foreach(println(_))
     println("为每个人推荐前十个商品")
     val s=bestModel.recommendProductsForUsers(10).take(10)

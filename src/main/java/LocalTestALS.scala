@@ -22,25 +22,28 @@ object LocalTestALS{
    // println(rawData.first())
     //格式化数据集--将数据切分
     val rawRatings = rawData.map(_.split("\t").take(3))
+    rawRatings.foreach(println)
     //将评分矩阵RDD转化为Rating格式的RDD
     val ratings = rawRatings.map{case Array(user,movie,rating)=>Rating(user.toInt,movie.toInt,rating.toDouble)}
+
     println("将评分矩阵RDD转化为Rating格式的RDD")
    // println(ratings.first().user)
     /*训练推荐模型--ALS*/
     val model = ALS.train(ratings,50,10,0.01)
-    model.save(sc,"C:\\Users\\Administrator\\Desktop\\movie\\ml-1m\\")
+    //model.save(sc,"C:\\Users\\Administrator\\Desktop\\movie\\ml-1m\\ttttt")
     //使用ALS推荐模型
     val predictedRating = model.predict(789,123)
     println("预测评分："+predictedRating)
     val userId=789
     val K=10
+
     val topKRecs = model.recommendProducts(userId,K)
     println(topKRecs.mkString("\n"))
     /*初步检验推荐效果
     *
     * */
     //导入电影数据集
-    val movies = sc.textFile("C:\\Users\\Administrator\\Desktop\\movie\\ml-100k\\ml-100ku.item")
+    val movies = sc.textFile("C:\\Users\\Administrator\\Desktop\\movie\\ml-100k\\ml-100k\\u.item")
     val titles = movies.map(line=>line.split("\\|").take(2)).map(array=>(array(0).toInt,array(1))).collectAsMap()
     println("电影信息："+titles(123))
     //建立用户名-其他RDD，并仅获取用户789的记录
